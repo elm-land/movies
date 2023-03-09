@@ -4,7 +4,9 @@
       "development": { "debugger": true },
       "production": { "debugger": false }
     },
-    "env": [],
+    "env": [
+      "TMDB_API_TOKEN"
+    ],
     "html": {
       "attributes": {
         "html": { "lang": "en" },
@@ -16,7 +18,10 @@
         { "http-equiv": "X-UA-Compatible", "content": "IE=edge" },
         { "name": "viewport", "content": "width=device-width, initial-scale=1.0" }
       ],
-      "link": [],
+      "link": [
+        { "rel": "icon", "href": "/images/favicon.png" },
+        { "rel": "stylesheet", "href": "/main.css" }
+      ],
       "script": []
     },
     "router": {
