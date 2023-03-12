@@ -3,6 +3,7 @@ port module Effect exposing
     , none, batch
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
+    , sendApiRequest
     , scrollElementLeft
     , scrollElementRight
     , map, toCmd
@@ -15,6 +16,8 @@ port module Effect exposing
 @docs sendCmd, sendMsg
 @docs pushRoute, replaceRoute, loadExternalUrl
 
+@docs sendApiRequest
+
 @docs scrollElementLeft
 @docs scrollElementRight
 
@@ -24,6 +27,8 @@ port module Effect exposing
 
 import Browser.Navigation
 import Dict exposing (Dict)
+import Http
+import Json.Decode
 import Json.Encode
 import Route exposing (Route)
 import Route.Path
@@ -47,6 +52,13 @@ type Effect msg
     | SendSharedMsg Shared.Msg.Msg
       -- SCROLLING
     | ScrollElement { id : String, direction : ScrollDirection }
+      -- API
+    | SendApiRequest
+        { endpoint : String
+        , decoder : Json.Decode.Decoder msg
+        , onMissingToken : msg
+        , onHttpError : Http.Error -> msg
+        }
 
 
 
@@ -139,6 +151,22 @@ scrollElementRight { id } =
 
 
 
+-- TMDB API
+
+
+sendApiRequest : { endpoint : String, decoder : Json.Decode.Decoder value, onResponse : Result Http.Error value -> msg } -> Effect msg
+sendApiRequest options =
+    SendApiRequest
+        { endpoint = options.endpoint
+        , decoder =
+            Json.Decode.map (Ok >> options.onResponse)
+                options.decoder
+        , onMissingToken = options.onResponse (Err (Http.BadUrl "Token not provided"))
+        , onHttpError = Err >> options.onResponse
+        }
+
+
+
 -- INTERNALS
 
 
@@ -171,6 +199,14 @@ map fn effect =
 
         ScrollElement info ->
             ScrollElement info
+
+        SendApiRequest info ->
+            SendApiRequest
+                { endpoint = info.endpoint
+                , decoder = Json.Decode.map fn info.decoder
+                , onMissingToken = fn info.onMissingToken
+                , onHttpError = \httpError -> fn (info.onHttpError httpError)
+                }
 
 
 {-| Elm Land depends on this function to perform your effects.
@@ -226,5 +262,41 @@ toCmd options effect =
                         ]
                 }
 
+        SendApiRequest request ->
+            case options.shared.apiToken of
+                Just token ->
+                    Http.request
+                        { method = "GET"
+                        , headers =
+                            [ Http.header "Authorization"
+                                ("Bearer ${token}"
+                                    |> String.replace "${token}" token
+                                )
+                            ]
+                        , url = "https://api.themoviedb.org/3" ++ request.endpoint
+                        , body = Http.emptyBody
+                        , expect =
+                            Http.expectJson
+                                (\result ->
+                                    case result of
+                                        Ok msg ->
+                                            msg
 
-port outgoing : { tag : String, data : Json.Encode.Value } -> Cmd msg
+                                        Err httpError ->
+                                            request.onHttpError httpError
+                                )
+                                request.decoder
+                        , timeout = Nothing
+                        , tracker = Nothing
+                        }
+
+                Nothing ->
+                    Task.succeed ()
+                        |> Task.perform (\_ -> request.onMissingToken)
+
+
+port outgoing :
+    { tag : String
+    , data : Json.Encode.Value
+    }
+    -> Cmd msg

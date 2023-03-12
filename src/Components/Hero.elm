@@ -8,6 +8,7 @@ import Route.Path
 
 view :
     { title : String
+    , category : String
     , link : Maybe Route.Path.Path
     , description : String
     , rating : Float
@@ -25,7 +26,8 @@ view props =
 
         content : List (Html msg)
         content =
-            [ h1 [ Attr.class "hero__title font-h1 textshadow" ] [ text props.title ]
+            [ p [ Attr.class "hero__category" ] [ text props.category ]
+            , h1 [ Attr.class "hero__title font-h1 textshadow" ] [ text props.title ]
             , div [ Attr.class "row gap-px16" ]
                 [ Components.Stars.view { rating = props.rating }
                 , span [ Attr.class "textshadow" ] [ text (String.fromInt props.year) ]

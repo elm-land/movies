@@ -4,20 +4,21 @@
 
 ## Introduction
 
-The goal of this repository is to show you how to use [Elm Land](https://elm.land) to build a web application. If you're new to Elm Land or learning web development, we recommend you join [the community Discord](https://join.elm.land)!
+The goal of this repository is to show you how to use [Elm Land](https://elm.land) to build a real web application. 
 
-<!-- ![Screenshot](./docs/screenshot.jpg) -->
+![Screenshot](./screenshot.png)
 
-__Disclaimer:__ This product uses [the TMDB API](https://www.themoviedb.org/) but is not endorsed or certified by TMDB.
+If you're new to Elm Land or web development, come join the [Elm Land Discord](https://join.elm.land) and say "Hello" 🌈
 
-<!-- ![The TMDB logo](https://www.themoviedb.org/assets/2/v4/logos/v2/blue_short-8e7b30f73a4020692ccca9c88bafe5dcb6f8a62a4c6bc55cd9ba82bb2cd95f6c.svg) -->
 
-## Running the app locally
+## Try it out!
 
-Here's how you can run this web application locally on your own machine.
+Here's how you can run this web application locally on your own machine:
 
-1. Be sure to install [Node.js v18.15.0+](https://nodejs.org/)
-1. Copy the `.env.example` file to `.env`, and provide your [personal TMDB API token](https://developers.themoviedb.org/3/getting-started/introduction). Here's a quick example:
+1. Make sure [Node.js v18+](https://nodejs.org/) is installed
+1. Rename the existing `.env.example` file to `.env`, and provide your [own TMDB API token](https://developers.themoviedb.org/3/getting-started/introduction). 
+
+    Here's a quick example of what your file should look like once you get a real API token:
 
     ```sh
     # https://developers.themoviedb.org/3/getting-started/introduction
@@ -29,7 +30,26 @@ Here's how you can run this web application locally on your own machine.
     npx elm-land server
     ```
 
-1. Visit `http://localhost:1234` in your web browser!
+1. Open `http://localhost:1234` in your web browser, and that's it!
+
+## Project structure
+
+This entire application is built with Elm, CSS, and a bit of JS code. Here's how the project is organized:
+
+```elm
+- elm.json          -- 🌐 Our project dependencies
+- src/
+  |- Pages/        -- 📑 Pages match up with URL paths
+  |- Components/   -- 🧱 Navbars, footers, carousels, etc
+  |- Layouts/      -- 🍱 Layouts used by many pages
+  |- Api/          -- 🔄 Code that uses The Movie Database API
+  |- interop.js    -- 🫂 Allows our Elm app to call JS code
+- static/
+  |- images/...    -- 📸 Icons and image assets
+  |- main.css      -- 🎨 Defines all our styles
+```
+
+You can also learn more about how specific files work in [the official Elm Land guide](https://elm.land/guide)!
 
 ## Special thanks
 

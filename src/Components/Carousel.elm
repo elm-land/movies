@@ -13,6 +13,8 @@ module Components.Carousel exposing
 
 -}
 
+import Api.Error
+import Api.Response
 import Browser.Dom
 import Components.Icon
 import Components.Stars
@@ -20,6 +22,7 @@ import Effect exposing (Effect)
 import Html exposing (..)
 import Html.Attributes as Attr
 import Html.Events
+import Http
 import Route.Path
 import Task exposing (Task)
 
@@ -102,60 +105,87 @@ view :
     { title : String
     , id : String
     , route : Route.Path.Path
-    , items : List Item
+    , items : Api.Response.Response (List Item)
     , onMsg : Msg -> msg
     }
     -> Html msg
 view props =
-    Html.map props.onMsg <|
-        section [ Attr.class "carousel" ]
-            [ div [ Attr.class "carousel__header" ]
+    let
+        viewHeader : Html Msg
+        viewHeader =
+            div [ Attr.class "carousel__header" ]
                 [ h3 [ Attr.class "font-h3" ] [ text props.title ]
                 , a [ Attr.class "font-link", Route.Path.href props.route ] [ text "Explore more" ]
                 ]
-            , if List.isEmpty props.items then
-                p [ Attr.class "carousel__no-results" ]
-                    [ text "No results found."
-                    ]
 
-              else
-                div [ Attr.class "carousel__body" ]
-                    [ button
-                        [ Attr.class "carousel__arrow carousel__arrow--left"
-                        , Html.Events.onClick (ClickedLeftArrow { id = props.id })
+        viewLeftArrow : Html Msg
+        viewLeftArrow =
+            button
+                [ Attr.class "carousel__arrow carousel__arrow--left"
+                , Html.Events.onClick (ClickedLeftArrow { id = props.id })
+                ]
+                [ Components.Icon.view
+                    { icon = Components.Icon.arrowLeft
+                    , isFilled = False
+                    }
+                ]
+
+        viewRightArrow : Html Msg
+        viewRightArrow =
+            button
+                [ Attr.class "carousel__arrow carousel__arrow--right"
+                , Html.Events.onClick (ClickedRightArrow { id = props.id })
+                ]
+                [ Components.Icon.view
+                    { icon = Components.Icon.arrowRight
+                    , isFilled = False
+                    }
+                ]
+
+        viewErrorMessage : Http.Error -> Html Msg
+        viewErrorMessage httpError =
+            p [ Attr.class "carousel__no-results" ]
+                [ text (Api.Error.toHelpfulMessage httpError)
+                ]
+
+        viewLoadingPlaceholder : Html Msg
+        viewLoadingPlaceholder =
+            div [ Attr.style "height" "469px" ] []
+    in
+    Html.map props.onMsg
+        (section [ Attr.class "carousel" ]
+            [ viewHeader
+            , case props.items of
+                Api.Response.Loading ->
+                    viewLoadingPlaceholder
+
+                Api.Response.Failure httpError ->
+                    viewErrorMessage httpError
+
+                Api.Response.Success items ->
+                    div [ Attr.class "carousel__body" ]
+                        [ viewLeftArrow
+                        , div [ Attr.id props.id, Attr.class "carousel__items-container" ]
+                            [ div [ Attr.class "carousel__items" ]
+                                (List.map viewCarouselItem items)
+                            ]
+                        , viewRightArrow
                         ]
-                        [ Components.Icon.view
-                            { icon = Components.Icon.arrowLeft
-                            , isFilled = False
-                            }
-                        ]
-                    , div [ Attr.id props.id, Attr.class "carousel__items-container" ]
-                        [ div [ Attr.class "carousel__items" ]
-                            (List.map viewCarouselItem props.items)
-                        ]
-                    , button
-                        [ Attr.class "carousel__arrow carousel__arrow--right"
-                        , Html.Events.onClick (ClickedRightArrow { id = props.id })
-                        ]
-                        [ Components.Icon.view
-                            { icon = Components.Icon.arrowRight
-                            , isFilled = False
-                            }
-                        ]
-                    ]
             ]
+        )
 
 
 viewCarouselItem : Item -> Html Msg
 viewCarouselItem item =
     let
+        imageUrl : String
         imageUrl =
             "url('${url}')"
                 |> String.replace "${url}" item.image
 
         ratingDecimal : String
         ratingDecimal =
-            (item.rating / 10)
+            (item.rating / 20)
                 |> String.fromFloat
                 |> String.left 3
     in

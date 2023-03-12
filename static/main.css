@@ -190,19 +190,32 @@ body {
   background-position: right center;
   background-size: 60vh auto;
   background-repeat: no-repeat;
-  transition: background-size 300ms ease-in-out;
+  transition: background-size 300ms ease-in-out, opacity 300ms ease-in-out;
+}
+
+.hero--invisible {
+  opacity: 0;
 }
 
 .hero--interactive:hover {
   background-size: 65vh auto;
 }
 
-.hero--interactive .hero__title {
-  opacity: 0.7;
+.hero__category {
+  text-transform: uppercase;
+  opacity: 0.6;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  margin-bottom: -0.75em;
 }
 
+.hero__title {
+  transition: color 150ms ease-in;
+}
+
+.hero--interactive:focus .hero__title,
 .hero--interactive:hover .hero__title {
-  opacity: 1;
+  color: var(--color-fg-2);
 }
 
 .hero::before {
@@ -335,6 +348,11 @@ body {
   right: 0;
   width: var(--space-px32);
   background: var(--gradient-carousel-right);
+}
+
+.carousel__no-results {
+  opacity: 0.6;
+  padding: var(--space-px32);
 }
 
 .carousel__items {
@@ -574,6 +592,9 @@ body {
   }
   .carousel__items {
     padding: 0 var(--space-px64);
+  }
+  .carousel__no-results {
+    padding: var(--space-px32) var(--space-px64);
   }
   .carousel__arrow {
     width: var(--space-px64);
