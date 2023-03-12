@@ -68,6 +68,13 @@
     --gradient-carousel-left: linear-gradient(to right, rgba(0, 0, 0, 0.85), transparent);
     --gradient-carousel-right: linear-gradient(to left, rgba(0, 0, 0, 0.85), transparent);
   }
+
+  .logo { background-image: url('./images/elm-land-logo-light.png'); }
+
+  .navbar__icon-link:nth-child(1) { color: #ef4871; }
+  .navbar__icon-link:nth-child(2) { color: #fcf13a; }
+  .navbar__icon-link:nth-child(3) { color: #77ea6d; }
+  .navbar__icon-link:nth-child(4) { color: #56c6e8; }
 }
 
 @media (prefers-color-scheme: light) {
@@ -87,6 +94,8 @@
     --gradient-carousel-left: linear-gradient(to right, rgba(255, 255, 255, 0.85), transparent);
     --gradient-carousel-right: linear-gradient(to left, rgba(255, 255, 255, 0.85), transparent);
   }
+
+  .logo { background-image: url('./images/elm-land-logo-dark.png'); }
 }
 
 /* RESETS */
@@ -158,6 +167,16 @@ body {
   flex-shrink: 0;
 }
 
+.layout__main {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.layout__main > * {
+  flex-shrink: 0;
+}
+
 .navbar__icon-link {
   flex: 1 0 auto;
   padding: var(--space-px16) var(--space-px24);
@@ -165,15 +184,19 @@ body {
   align-items: center;
   justify-content: center;
   background-color: var(--color-bg-2);
+  border-top: solid 2px;
+  border-color: transparent;
 }
-.navbar__icon-link:nth-child(1) { color: lightcoral; }
-.navbar__icon-link:nth-child(2) { color: lightgoldenrodyellow; }
-.navbar__icon-link:nth-child(3) { color: lightgreen; }
-.navbar__icon-link:nth-child(4) { color: lightskyblue; }
 
+.navbar__icon-link--active,
 .navbar__icon-link:hover {
   background-color: var(--color-bg-3);
 }
+
+.navbar__icon-link.navbar__icon-link--active {
+  border-color: initial;
+}
+
 
 /* HERO */
 .hero {
@@ -553,6 +576,14 @@ body {
   width: 120px;
 }
 
+.logo {
+  width: 120px;
+  height: 30px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  /* Actual image URL is based on dark/light mode  */
+}
+
 .disclaimer {
   opacity: 0.8;
   font-size: 14px;
@@ -563,12 +594,19 @@ body {
   .layout {
     flex-direction: row;
   }
+
   .navbar {
     flex-direction: column;
     border-top: unset;
     border-right: var(--border-px1);
     border-right-color: var(--color-bg-3);
   }
+  .navbar__icon-link {
+    border-top: 0;
+    border-right: solid 2px;
+    border-color: transparent;
+  }
+
   .footer {
     padding: var(--space-px64);
     padding-bottom: var(--space-px96);

@@ -1,6 +1,7 @@
 module Layouts.Default exposing (Model, Msg, Settings, layout)
 
 import Components.ErrorDialog
+import Components.Footer
 import Components.Navbar
 import Effect exposing (Effect)
 import Html exposing (Html)
@@ -91,7 +92,10 @@ view shared route { fromMsg, model, content } =
                 [ Components.Navbar.view
                     { currentRoute = route
                     }
-                , Html.div [ class "layout__page" ] content.body
+                , Html.div [ class "layout__page" ]
+                    [ Html.div [ class "layout__main" ] content.body
+                    , Components.Footer.view
+                    ]
                 ]
             ]
     }

@@ -17,16 +17,23 @@ type alias IconLink =
 view : { currentRoute : Route params } -> Html msg
 view props =
     let
+        isCurrentRoute : IconLink -> Bool
+        isCurrentRoute link =
+            props.currentRoute.path == link.routePath
+
         viewIconLink : IconLink -> Html msg
         viewIconLink link =
             a
                 [ Attr.class "navbar__icon-link"
+                , Attr.classList
+                    [ ( "navbar__icon-link--active", isCurrentRoute link )
+                    ]
                 , Route.Path.href link.routePath
                 , Attr.title link.label
                 ]
                 [ Components.Icon.view
                     { icon = link.icon
-                    , isFilled = props.currentRoute.path == link.routePath
+                    , isFilled = isCurrentRoute link
                     }
                 ]
     in

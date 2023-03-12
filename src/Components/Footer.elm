@@ -14,7 +14,7 @@ view =
                 , Attr.rel "noopener"
                 , Attr.href "https://elm.land"
                 ]
-                [ img [ Attr.src "/images/elm-land-logo-light.png", Attr.alt "Elm Land" ] [] ]
+                [ div [ Attr.attribute "role" "img", Attr.class "logo", Attr.alt "Elm Land" ] [] ]
             ]
         , p []
             [ text "Data provided by "

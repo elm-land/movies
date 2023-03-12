@@ -100,7 +100,7 @@ update msg model =
                     Api.Response.fromResult result
             in
             case result of
-                Ok (firstPopularMovie :: otherPopularMovies) ->
+                Ok (firstPopularMovie :: _) ->
                     ( { model | popularMovies = popularMovies }
                     , Api.Movie.Details.fetch
                         { id = firstPopularMovie.id
@@ -178,7 +178,6 @@ view model =
                     |> Api.Response.map (List.map fromTvShowToItem)
             , onMsg = PopularTvShowsCarouselSent
             }
-        , Components.Footer.view
         ]
     }
 
