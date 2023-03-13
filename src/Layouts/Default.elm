@@ -5,7 +5,7 @@ import Components.Footer
 import Components.Navbar
 import Effect exposing (Effect)
 import Html exposing (Html)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, id)
 import Layout exposing (Layout)
 import Route exposing (Route)
 import Shared
@@ -73,7 +73,12 @@ view :
     -> { fromMsg : Msg -> mainMsg, content : View mainMsg, model : Model }
     -> View mainMsg
 view shared route { fromMsg, model, content } =
-    { title = content.title
+    { title =
+        if String.isEmpty content.title then
+            "Elm Land Movies"
+
+        else
+            "Elm Land Movies • " ++ content.title
     , body =
         if shared.apiToken == Nothing then
             [ Components.ErrorDialog.view
@@ -92,7 +97,7 @@ view shared route { fromMsg, model, content } =
                 [ Components.Navbar.view
                     { currentRoute = route
                     }
-                , Html.div [ class "layout__page" ]
+                , Html.div [ class "layout__page", id "page" ]
                     [ Html.div [ class "layout__main" ] content.body
                     , Components.Footer.view
                     ]

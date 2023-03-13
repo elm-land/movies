@@ -45,7 +45,7 @@ view props =
               }
             , { label = "Movies"
               , icon = Components.Icon.movies
-              , routePath = Route.Path.Movie
+              , routePath = Route.Path.Movies
               }
             , { label = "TV Shows"
               , icon = Components.Icon.tv

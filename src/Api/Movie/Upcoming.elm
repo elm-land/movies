@@ -1,6 +1,5 @@
-module Api.Movie.Popular exposing (Movie, fetch)
+module Api.Movie.Upcoming exposing (Movie, fetch)
 
-import Api.ImageUrl
 import Api.Movie
 import Effect exposing (Effect)
 import Http
@@ -23,7 +22,7 @@ fetch options =
                 (Json.Decode.list Api.Movie.decoder)
     in
     Effect.sendApiRequest
-        { endpoint = "/movie/popular"
+        { endpoint = "/movie/upcoming"
         , onResponse = options.onResponse
         , decoder = decoder
         }

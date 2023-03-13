@@ -1,9 +1,11 @@
 module Pages.Home_ exposing (Model, Msg, page)
 
+import Api.Duration
+import Api.Id
+import Api.Movie
 import Api.Movie.Details
 import Api.Movie.Popular
 import Api.Response
-import Api.Runtime
 import Api.Tv.Popular
 import Components.Carousel
 import Components.Footer
@@ -139,14 +141,13 @@ subscriptions model =
 
 view : Model -> View Msg
 view model =
-    { title = "Elm Land Movies"
+    { title = ""
     , body =
         [ case Api.Response.toMaybe model.featuredMovie of
             Just featuredMovie ->
-                Components.Hero.view
+                Components.Hero.viewMovie
                     { title = featuredMovie.title
-                    , category = "Movies"
-                    , link = Just (Route.Path.Movie_MovieId_ { movieId = String.fromInt featuredMovie.id })
+                    , movieIdLink = Just featuredMovie.id
                     , description = featuredMovie.overview
                     , rating = featuredMovie.vote_average * 10
                     , year =
@@ -154,58 +155,27 @@ view model =
                             |> String.left 4
                             |> String.toInt
                             |> Maybe.withDefault 2020
-                    , duration = Api.Runtime.toString featuredMovie.runtime
-                    , backgroundImageUrl = toImageUrl featuredMovie
+                    , duration = Api.Duration.toString featuredMovie.duration
+                    , backgroundImageUrl = featuredMovie.imageUrl
                     }
 
             _ ->
                 div [ Attr.class "hero hero--invisible" ] []
-        , Components.Carousel.view
+        , Components.Carousel.viewMovie
             { title = "Popular Movies"
             , id = "popular-movies"
-            , route = Route.Path.Movie
-            , items =
-                model.popularMovies
-                    |> Api.Response.map (List.map fromMovieToItem)
+            , exploreMore = Just Route.Path.Movies
+            , items = model.popularMovies
+            , noResultsMessage = "No popular movies found"
             , onMsg = PopularMoviesCarouselSent
             }
-        , Components.Carousel.view
+        , Components.Carousel.viewMovie
             { title = "Popular TV"
             , id = "popular-tv-shows"
-            , route = Route.Path.Tv
-            , items =
-                model.popularTvShows
-                    |> Api.Response.map (List.map fromTvShowToItem)
+            , exploreMore = Just Route.Path.Tv
+            , items = model.popularTvShows
+            , noResultsMessage = "No popular TV shows found"
             , onMsg = PopularTvShowsCarouselSent
             }
         ]
     }
-
-
-fromMovieToItem : Api.Movie.Popular.Movie -> Components.Carousel.Item
-fromMovieToItem movie =
-    { route =
-        Route.Path.Movie_MovieId_
-            { movieId = String.fromInt movie.id
-            }
-    , title = movie.title
-    , rating = movie.vote_average * 10
-    , image = toImageUrl movie
-    }
-
-
-fromTvShowToItem : Api.Tv.Popular.TvShow -> Components.Carousel.Item
-fromTvShowToItem show =
-    { route =
-        Route.Path.Tv_ShowId_
-            { showId = String.fromInt show.id
-            }
-    , title = show.name
-    , rating = show.vote_average * 10
-    , image = toImageUrl show
-    }
-
-
-toImageUrl : { item | poster_path : String } -> String
-toImageUrl { poster_path } =
-    "https://www.themoviedb.org/t/p/w440_and_h660_face" ++ poster_path

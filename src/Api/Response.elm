@@ -1,14 +1,14 @@
 module Api.Response exposing
     ( Response(..), fromResult
     , map
-    , toMaybe
+    , toMaybe, toFailureReason
     )
 
 {-|
 
 @docs Response, fromResult
 @docs map
-@docs toMaybe
+@docs toMaybe, toFailureReason
 
 -}
 
@@ -55,3 +55,16 @@ toMaybe response =
 
         Failure reason ->
             Nothing
+
+
+toFailureReason : Response value -> Maybe Http.Error
+toFailureReason response =
+    case response of
+        Loading ->
+            Nothing
+
+        Success value ->
+            Nothing
+
+        Failure httpError ->
+            Just httpError

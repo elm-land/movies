@@ -1,15 +1,17 @@
 module Api.Tv.Popular exposing (TvShow, fetch)
 
+import Api.Id
+import Api.ImageUrl
 import Effect exposing (Effect)
 import Http
 import Json.Decode
 
 
 type alias TvShow =
-    { id : Int
-    , name : String
+    { id : Api.Id.Id
+    , title : String
     , vote_average : Float
-    , poster_path : String
+    , imageUrl : Api.ImageUrl.ImageUrl
     , first_air_date : String
     , overview : String
     }
@@ -18,10 +20,10 @@ type alias TvShow =
 tvShowDecoder : Json.Decode.Decoder TvShow
 tvShowDecoder =
     Json.Decode.map6 TvShow
-        (Json.Decode.field "id" Json.Decode.int)
+        (Json.Decode.field "id" Api.Id.decoder)
         (Json.Decode.field "name" Json.Decode.string)
         (Json.Decode.field "vote_average" Json.Decode.float)
-        (Json.Decode.field "poster_path" Json.Decode.string)
+        (Json.Decode.field "poster_path" Api.ImageUrl.tvShow)
         (Json.Decode.field "first_air_date" Json.Decode.string)
         (Json.Decode.field "overview" Json.Decode.string)
 

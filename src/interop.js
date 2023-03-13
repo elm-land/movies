@@ -7,6 +7,25 @@ export const flags = ({ env }) => {
 }
 
 export const onReady = ({ app }) => {
+
+  // Scroll to top when navigating from one page to another
+  if ('navigation' in window) {
+    window.navigation.onnavigate = (event) => {
+      let oldUrl = new URL(window.location.href)
+      let newUrl = new URL(event.destination.url)
+      if (oldUrl.pathname !== newUrl.pathname) {
+        window.requestAnimationFrame(() => {
+          let page = document.getElementById('page')
+          if (page) {
+            page.scrollTo(0, 0)
+          } else {
+            window.scrollTo(0, 0)
+          }
+        })
+      }
+    }
+  }
+
   app.ports.outgoing.subscribe(({ tag, data }) => {
     switch (tag) {
       case 'SCROLL_ELEMENT':

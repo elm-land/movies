@@ -1,15 +1,14 @@
-module Pages.Movie exposing (Model, Msg, page)
+module Pages.People.PersonId_ exposing (Model, Msg, page)
 
 import Effect exposing (Effect)
-import Html
-import Layouts
-import Page exposing (Page)
 import Route exposing (Route)
+import Html
+import Page exposing (Page)
 import Shared
 import View exposing (View)
 
 
-page : Shared.Model -> Route () -> Page Model Msg
+page : Shared.Model -> Route { personId : String } -> Page Model Msg
 page shared route =
     Page.new
         { init = init
@@ -17,12 +16,6 @@ page shared route =
         , subscriptions = subscriptions
         , view = view
         }
-        |> Page.withLayout toLayout
-
-
-toLayout : Model -> Layouts.Layout
-toLayout model =
-    Layouts.Default { default = {} }
 
 
 
@@ -72,6 +65,6 @@ subscriptions model =
 
 view : Model -> View Msg
 view model =
-    { title = "Pages.Movie"
-    , body = [ Html.text "Movies" ]
+    { title = "Pages.People.PersonId_"
+    , body = [ Html.text "/people/:personId" ]
     }

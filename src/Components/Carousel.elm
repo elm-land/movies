@@ -1,19 +1,18 @@
 module Components.Carousel exposing
     ( Msg, update
-    , view
-    , Item
+    , viewPerson, viewMovie
     )
 
 {-|
 
 @docs Msg, update
-@docs view
-
-@docs Item
+@docs viewPerson, viewMovie
 
 -}
 
 import Api.Error
+import Api.Id
+import Api.ImageUrl
 import Api.Response
 import Browser.Dom
 import Components.Icon
@@ -93,19 +92,124 @@ scrollWithOffset offset id =
 -- VIEW
 
 
+viewMovie :
+    { title : String
+    , id : String
+    , exploreMore : Maybe Route.Path.Path
+    , items :
+        Api.Response.Response
+            (List
+                { movie
+                    | id : Api.Id.Id
+                    , title : String
+                    , vote_average : Float
+                    , imageUrl : Api.ImageUrl.ImageUrl
+                }
+            )
+    , noResultsMessage : String
+    , onMsg : Msg -> msg
+    }
+    -> Html msg
+viewMovie props =
+    let
+        toCarouselItem :
+            { movie
+                | id : Api.Id.Id
+                , title : String
+                , vote_average : Float
+                , imageUrl : Api.ImageUrl.ImageUrl
+            }
+            -> Item
+        toCarouselItem movie =
+            { route =
+                Route.Path.Movies_MovieId_
+                    { movieId = Api.Id.toString movie.id
+                    }
+            , title = movie.title
+            , image = movie.imageUrl
+            , details = Rating (movie.vote_average * 10)
+            }
+    in
+    view
+        { title = props.title
+        , id = props.id
+        , exploreMore = props.exploreMore
+        , items = props.items |> Api.Response.map (List.map toCarouselItem)
+        , noResultsMessage = props.noResultsMessage
+        , onMsg = props.onMsg
+        }
+
+
+viewPerson :
+    { title : String
+    , id : String
+    , exploreMore : Maybe Route.Path.Path
+    , items :
+        Api.Response.Response
+            (List
+                { person
+                    | name : String
+                    , imageUrl : String
+                    , id : Api.Id.Id
+                }
+            )
+    , toSubheader :
+        { person
+            | name : String
+            , imageUrl : String
+            , id : Api.Id.Id
+        }
+        -> String
+    , noResultsMessage : String
+    , onMsg : Msg -> msg
+    }
+    -> Html msg
+viewPerson props =
+    let
+        toCarouselItem : { person | name : String, imageUrl : String, id : Api.Id.Id } -> Item
+        toCarouselItem person =
+            { title = person.name
+            , image = person.imageUrl
+            , route =
+                Route.Path.People_PersonId_
+                    { personId = Api.Id.toString person.id
+                    }
+            , details = Caption (props.toSubheader person)
+            }
+    in
+    view
+        { title = props.title
+        , id = props.id
+        , exploreMore = props.exploreMore
+        , items = props.items |> Api.Response.map (List.map toCarouselItem)
+        , noResultsMessage = props.noResultsMessage
+        , onMsg = props.onMsg
+        }
+
+
+
+-- INTERNAL VIEW STUFF
+
+
 type alias Item =
     { title : String
     , image : String
     , route : Route.Path.Path
-    , rating : Float
+    , details : ItemDetails
     }
+
+
+type ItemDetails
+    = Rating Float
+    | Caption String
 
 
 view :
     { title : String
     , id : String
-    , route : Route.Path.Path
+    , exploreMore : Maybe Route.Path.Path
     , items : Api.Response.Response (List Item)
+    , noResultsMessage : String
     , onMsg : Msg -> msg
     }
     -> Html msg
@@ -115,7 +219,12 @@ view props =
         viewHeader =
             div [ Attr.class "carousel__header" ]
                 [ h3 [ Attr.class "font-h3" ] [ text props.title ]
-                , a [ Attr.class "font-link", Route.Path.href props.route ] [ text "Explore more" ]
+                , case props.exploreMore of
+                    Just route ->
+                        a [ Attr.class "font-link", Route.Path.href route ] [ text "Explore more" ]
+
+                    Nothing ->
+                        text ""
                 ]
 
         viewLeftArrow : Html Msg
@@ -142,10 +251,10 @@ view props =
                     }
                 ]
 
-        viewErrorMessage : Http.Error -> Html Msg
-        viewErrorMessage httpError =
+        viewErrorMessage : String -> Html Msg
+        viewErrorMessage message =
             p [ Attr.class "carousel__no-results" ]
-                [ text (Api.Error.toHelpfulMessage httpError)
+                [ text message
                 ]
 
         viewLoadingPlaceholder : Html Msg
@@ -160,7 +269,10 @@ view props =
                     viewLoadingPlaceholder
 
                 Api.Response.Failure httpError ->
-                    viewErrorMessage httpError
+                    viewErrorMessage (Api.Error.toHelpfulMessage httpError)
+
+                Api.Response.Success [] ->
+                    viewErrorMessage props.noResultsMessage
 
                 Api.Response.Success items ->
                     div [ Attr.class "carousel__body" ]
@@ -182,12 +294,6 @@ viewCarouselItem item =
         imageUrl =
             "url('${url}')"
                 |> String.replace "${url}" item.image
-
-        ratingDecimal : String
-        ratingDecimal =
-            (item.rating / 20)
-                |> String.fromFloat
-                |> String.left 3
     in
     a
         [ Attr.class "carousel__item"
@@ -197,9 +303,21 @@ viewCarouselItem item =
         [ div [ Attr.class "carousel__image", Attr.style "background-image" imageUrl ] []
         , div [ Attr.class "carousel__content" ]
             [ h4 [ Attr.title item.title, Attr.class "font-h4 max-lines-2" ] [ text item.title ]
-            , div [ Attr.class "row gap-px8" ]
-                [ Components.Stars.view { rating = item.rating }
-                , span [ Attr.class "font-body" ] [ text ratingDecimal ]
-                ]
+            , case item.details of
+                Rating rating ->
+                    let
+                        ratingDecimal : String
+                        ratingDecimal =
+                            (rating / 20)
+                                |> String.fromFloat
+                                |> String.left 3
+                    in
+                    div [ Attr.class "row gap-px8" ]
+                        [ Components.Stars.view { rating = rating }
+                        , span [ Attr.class "font-body" ] [ text ratingDecimal ]
+                        ]
+
+                Caption caption ->
+                    p [ Attr.class "carousel__caption" ] [ text caption ]
             ]
         ]

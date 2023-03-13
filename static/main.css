@@ -59,6 +59,7 @@
     --color-bg-4: var(--color-grey600);
     --color-fg: var(--color-white);
     --color-fg-2: var(--color-grey300);
+    --color-fg-3: var(--color-grey500);
     --color-error: var(--color-red);
 
     --shadow-md: 0 1rem 3rem rgba(0, 0, 0, 0.50);
@@ -85,6 +86,7 @@
     --color-bg-4: var(--color-grey300);
     --color-fg: var(--color-grey700);
     --color-fg-2: var(--color-grey500);
+    --color-fg-3: var(--color-grey300);
     --color-error: var(--color-red);
 
     --shadow-md: 0 1rem 3rem rgba(0, 0, 0, 0.10);
@@ -234,6 +236,7 @@ body {
 
 .hero__title {
   transition: color 150ms ease-in;
+  max-width: 20ch;
 }
 
 .hero--interactive:focus .hero__title,
@@ -290,6 +293,47 @@ body {
 
 .stars__image--filled {
   background-image: url('/images/stars-filled.webp');
+}
+
+/* TABS */
+.tabs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-px32);
+  padding: var(--space-px32);
+  padding-top: var(--space-px16);
+  padding-bottom: var(--space-px64);
+  border-top: solid 1px var(--color-bg-3);
+  border-bottom: solid 1px var(--color-bg-3);
+}
+
+.tabs__header {
+  display: flex;
+}
+
+.tabs__tab {
+  flex: 1 0 auto;
+  text-transform: uppercase;
+  padding: var(--space-px16);
+  border-bottom: solid 2px;
+  border-color: var(--color-fg-3);
+  cursor: pointer;
+  color: var(--color-fg-2);
+  letter-spacing: 0.075em;
+}
+
+.tabs__invalid {
+  opacity: 0.75;
+}
+
+.tabs__tab:hover {
+  background-color: var(--color-bg-3);
+  color: var(--color-fg);
+}
+
+.tabs__tab--active {
+  border-color: initial;
+  color: var(--color-fg);
 }
 
 /* ERROR DIALOG */
@@ -374,8 +418,10 @@ body {
 }
 
 .carousel__no-results {
+  display: block;
   opacity: 0.6;
   padding: var(--space-px32);
+  padding-bottom: var(--space-px96);
 }
 
 .carousel__items {
@@ -397,6 +443,11 @@ body {
   padding: var(--space-px8);
 }
 
+.carousel__caption {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
 .carousel__image {
   opacity: 0.8;
   background-position: center;
@@ -404,6 +455,7 @@ body {
   background-repeat: no-repeat;
   margin: var(--space-px8) 0;
   border-radius: var(--radius-px8);
+  border: solid 1px var(--color-bg-3);
   width: 200px;
   height: 300px;
   background-color: var(--color-bg-3);
@@ -632,10 +684,22 @@ body {
     padding: 0 var(--space-px64);
   }
   .carousel__no-results {
-    padding: var(--space-px32) var(--space-px64);
+    padding-left: var(--space-px64);
+    padding-right: var(--space-px64);
   }
   .carousel__arrow {
     width: var(--space-px64);
+  }
+
+  .tabs {
+    padding-left: var(--space-px64);
+    padding-right: var(--space-px64);
+  }
+  .tabs__header {
+    justify-content: flex-start;
+  }
+  .tabs__tab {
+    flex: 0 0 auto;
   }
 }
 
