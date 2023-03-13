@@ -1,12 +1,15 @@
 module Components.Carousel exposing
     ( Msg, update
-    , viewPerson, viewMovie
+    , viewMovie, viewTvShow
+    , viewPerson
     )
 
 {-|
 
 @docs Msg, update
-@docs viewPerson, viewMovie
+
+@docs viewMovie, viewTvShow
+@docs viewPerson
 
 -}
 
@@ -128,6 +131,54 @@ viewMovie props =
             , title = movie.title
             , image = movie.imageUrl
             , details = Rating (movie.vote_average * 10)
+            }
+    in
+    view
+        { title = props.title
+        , id = props.id
+        , exploreMore = props.exploreMore
+        , items = props.items |> Api.Response.map (List.map toCarouselItem)
+        , noResultsMessage = props.noResultsMessage
+        , onMsg = props.onMsg
+        }
+
+
+viewTvShow :
+    { title : String
+    , id : String
+    , exploreMore : Maybe Route.Path.Path
+    , items :
+        Api.Response.Response
+            (List
+                { tvShow
+                    | id : Api.Id.Id
+                    , title : String
+                    , vote_average : Float
+                    , imageUrl : Api.ImageUrl.ImageUrl
+                }
+            )
+    , noResultsMessage : String
+    , onMsg : Msg -> msg
+    }
+    -> Html msg
+viewTvShow props =
+    let
+        toCarouselItem :
+            { tvShow
+                | id : Api.Id.Id
+                , title : String
+                , vote_average : Float
+                , imageUrl : Api.ImageUrl.ImageUrl
+            }
+            -> Item
+        toCarouselItem tvShow =
+            { route =
+                Route.Path.Tv_ShowId_
+                    { showId = Api.Id.toString tvShow.id
+                    }
+            , title = tvShow.title
+            , image = tvShow.imageUrl
+            , details = Rating (tvShow.vote_average * 10)
             }
     in
     view

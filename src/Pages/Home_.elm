@@ -169,7 +169,7 @@ view model =
             , noResultsMessage = "No popular movies found"
             , onMsg = PopularMoviesCarouselSent
             }
-        , Components.Carousel.viewMovie
+        , Components.Carousel.viewTvShow
             { title = "Popular TV"
             , id = "popular-tv-shows"
             , exploreMore = Just Route.Path.Tv
