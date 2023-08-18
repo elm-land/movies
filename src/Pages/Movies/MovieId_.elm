@@ -23,10 +23,11 @@ import View exposing (View)
 
 
 type alias Params =
-    { movieId : String }
+    { movieId : String
+    }
 
 
-page : Shared.Model -> Route Params -> Page Model Msg
+page : Shared.Model -> Route { movieId : String } -> Page Model Msg
 page shared route =
     Page.new
         { init = init route.params
@@ -37,9 +38,9 @@ page shared route =
         |> Page.withLayout toLayout
 
 
-toLayout : Model -> Layouts.Layout
+toLayout : Model -> Layouts.Layout Msg
 toLayout model =
-    Layouts.Default { default = {} }
+    Layouts.Default {}
 
 
 

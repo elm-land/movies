@@ -1,4 +1,4 @@
-module Layouts.Default exposing (Model, Msg, Settings, layout)
+module Layouts.Default exposing (Model, Msg, Props, layout)
 
 import Components.ErrorDialog
 import Components.Footer
@@ -12,12 +12,12 @@ import Shared
 import View exposing (View)
 
 
-type alias Settings =
+type alias Props =
     {}
 
 
-layout : Settings -> Shared.Model -> Route () -> Layout Model Msg mainMsg
-layout settings shared route =
+layout : Props -> Shared.Model -> Route () -> Layout () Model Msg contentMsg
+layout props shared route =
     Layout.new
         { init = init
         , update = update
@@ -70,9 +70,9 @@ subscriptions model =
 view :
     Shared.Model
     -> Route ()
-    -> { fromMsg : Msg -> mainMsg, content : View mainMsg, model : Model }
+    -> { toContentMsg : Msg -> mainMsg, content : View mainMsg, model : Model }
     -> View mainMsg
-view shared route { fromMsg, model, content } =
+view shared route { toContentMsg, model, content } =
     { title =
         if String.isEmpty content.title then
             "Elm Land Movies"

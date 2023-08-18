@@ -34,9 +34,9 @@ page shared route =
         |> Page.withLayout toLayout
 
 
-toLayout : Model -> Layouts.Layout
+toLayout : Model -> Layouts.Layout Msg
 toLayout model =
-    Layouts.Default { default = {} }
+    Layouts.Default {}
 
 
 
