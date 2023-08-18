@@ -3,10 +3,11 @@ port module Effect exposing
     , none, batch
     , sendCmd, sendMsg
     , pushRoute, replaceRoute, loadExternalUrl
+    , map, toCmd
+    , sendDelayedMsg
     , sendApiRequest
     , scrollElementLeft
     , scrollElementRight
-    , map, toCmd
     )
 
 {-|
@@ -16,12 +17,16 @@ port module Effect exposing
 @docs sendCmd, sendMsg
 @docs pushRoute, replaceRoute, loadExternalUrl
 
+@docs map, toCmd
+
+-- CUSTOM EFFECTS
+
+@docs sendDelayedMsg
+
 @docs sendApiRequest
 
 @docs scrollElementLeft
 @docs scrollElementRight
-
-@docs map, toCmd
 
 -}
 
@@ -30,6 +35,7 @@ import Dict exposing (Dict)
 import Http
 import Json.Decode
 import Json.Encode
+import Process
 import Route exposing (Route)
 import Route.Path
 import Route.Query
@@ -92,6 +98,18 @@ sendMsg : msg -> Effect msg
 sendMsg msg =
     Task.succeed msg
         |> Task.perform identity
+        |> SendCmd
+
+
+{-| Send a message after a certain number of milliseconds have passed.
+
+Useful for debouncing or throttling HTTP requests
+
+-}
+sendDelayedMsg : Int -> msg -> Effect msg
+sendDelayedMsg delayInMs msg =
+    Process.sleep (Basics.toFloat delayInMs)
+        |> Task.perform (\_ -> msg)
         |> SendCmd
 
 

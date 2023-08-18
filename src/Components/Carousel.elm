@@ -2,6 +2,8 @@ module Components.Carousel exposing
     ( Msg, update
     , viewMovie, viewTvShow
     , viewCastMember, viewPersonPhotos
+    , Item, ItemDetails(..)
+    , viewCarouselItem
     )
 
 {-|
@@ -10,6 +12,9 @@ module Components.Carousel exposing
 
 @docs viewMovie, viewTvShow
 @docs viewCastMember, viewPersonPhotos
+
+@docs Item, ItemDetails
+@docs viewCarouselItem
 
 -}
 
@@ -378,7 +383,7 @@ view props =
         )
 
 
-viewCarouselItem : Item -> Html Msg
+viewCarouselItem : Item -> Html msg
 viewCarouselItem item =
     let
         imageUrl : String
@@ -386,7 +391,7 @@ viewCarouselItem item =
             "url('${url}')"
                 |> String.replace "${url}" item.image
 
-        viewElement : List (Html Msg) -> Html Msg
+        viewElement : List (Html msg) -> Html msg
         viewElement children =
             case item.route of
                 Nothing ->
@@ -400,7 +405,7 @@ viewCarouselItem item =
                         ]
                         children
 
-        viewCarouselContent : String -> Html Msg
+        viewCarouselContent : String -> Html msg
         viewCarouselContent title =
             div [ Attr.class "carousel__content" ]
                 [ h4 [ Attr.title title, Attr.class "font-h4 max-lines-2" ] [ text title ]

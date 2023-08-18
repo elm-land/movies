@@ -165,7 +165,7 @@ viewPerson { person, images } =
                 |> List.map (\line -> p [] [ text line ])
     in
     div [ Attr.class "" ]
-        [ div [ Attr.class "page--person-detail row responsive gap-px32 mobile-align-center" ]
+        [ div [ Attr.class "page--person-detail row responsive gap-px32 mobile-align-center desktop-align-top" ]
             [ div [ Attr.class "person__image" ]
                 [ case List.head images of
                     Nothing ->
