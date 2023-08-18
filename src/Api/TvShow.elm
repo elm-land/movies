@@ -1,12 +1,13 @@
-module Api.Tv.Popular exposing (TvShow, fetch)
+module Api.TvShow exposing (TvShow, decoder)
 
 import Api.Id
 import Api.ImageUrl
-import Effect exposing (Effect)
-import Http
 import Json.Decode
+import Route.Path
 
 
+{-| A preview of a movie, useful for list pages
+-}
 type alias TvShow =
     { id : Api.Id.Id
     , title : String
@@ -17,8 +18,8 @@ type alias TvShow =
     }
 
 
-tvShowDecoder : Json.Decode.Decoder TvShow
-tvShowDecoder =
+decoder : Json.Decode.Decoder TvShow
+decoder =
     Json.Decode.map6 TvShow
         (Json.Decode.field "id" Api.Id.decoder)
         (Json.Decode.field "name" Json.Decode.string)
@@ -26,21 +27,3 @@ tvShowDecoder =
         (Json.Decode.field "poster_path" Api.ImageUrl.tvShow)
         (Json.Decode.field "first_air_date" Json.Decode.string)
         (Json.Decode.field "overview" Json.Decode.string)
-
-
-fetch :
-    { onResponse : Result Http.Error (List TvShow) -> msg
-    }
-    -> Effect msg
-fetch options =
-    let
-        decoder : Json.Decode.Decoder (List TvShow)
-        decoder =
-            Json.Decode.field "results"
-                (Json.Decode.list tvShowDecoder)
-    in
-    Effect.sendApiRequest
-        { endpoint = "/tv/popular"
-        , onResponse = options.onResponse
-        , decoder = decoder
-        }

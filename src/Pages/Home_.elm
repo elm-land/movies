@@ -6,7 +6,7 @@ import Api.Movie
 import Api.Movie.Details
 import Api.Movie.Popular
 import Api.Response
-import Api.Tv.Popular
+import Api.TvShow.Popular
 import Components.Carousel
 import Components.Footer
 import Components.Hero
@@ -45,7 +45,7 @@ toLayout model =
 type alias Model =
     { featuredMovie : Api.Response.Response Api.Movie.Details.Movie
     , popularMovies : Api.Response.Response (List Api.Movie.Popular.Movie)
-    , popularTvShows : Api.Response.Response (List Api.Tv.Popular.TvShow)
+    , popularTvShows : Api.Response.Response (List Api.TvShow.Popular.TvShow)
     }
 
 
@@ -59,7 +59,7 @@ init () =
         [ Api.Movie.Popular.fetch
             { onResponse = ApiPopularMoviesResponded
             }
-        , Api.Tv.Popular.fetch
+        , Api.TvShow.Popular.fetch
             { onResponse = ApiPopularTvShowsResponded
             }
         ]
@@ -74,7 +74,7 @@ type Msg
     = PopularMoviesCarouselSent Components.Carousel.Msg
     | PopularTvShowsCarouselSent Components.Carousel.Msg
     | ApiPopularMoviesResponded (Result Http.Error (List Api.Movie.Popular.Movie))
-    | ApiPopularTvShowsResponded (Result Http.Error (List Api.Tv.Popular.TvShow))
+    | ApiPopularTvShowsResponded (Result Http.Error (List Api.TvShow.Popular.TvShow))
     | ApiFeaturedMovieResponded (Result Http.Error Api.Movie.Details.Movie)
 
 

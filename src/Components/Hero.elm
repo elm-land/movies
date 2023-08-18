@@ -1,4 +1,8 @@
-module Components.Hero exposing (viewHttpError, viewMovie)
+module Components.Hero exposing
+    ( viewHttpError
+    , viewMovie
+    , viewTvShow
+    )
 
 import Api.Id
 import Components.Stars
@@ -6,6 +10,44 @@ import Html exposing (..)
 import Html.Attributes as Attr
 import Http
 import Route.Path
+
+
+viewTvShow :
+    { title : String
+    , showIdLink : Maybe Api.Id.Id
+    , description : String
+    , rating : Float
+    , year : Int
+    , duration : String
+    , backgroundImageUrl : String
+    }
+    -> Html msg
+viewTvShow props =
+    view
+        { category = Just "Tv Show"
+        , title = props.title
+        , description = props.description
+        , link =
+            case props.showIdLink of
+                Just id ->
+                    Just
+                        (Route.Path.Tv_ShowId_
+                            { showId = Api.Id.toString id
+                            }
+                        )
+
+                Nothing ->
+                    Nothing
+        , backgroundImageUrl = Just props.backgroundImageUrl
+        , subheader =
+            Just
+                (div [ Attr.class "row gap-px16" ]
+                    [ Components.Stars.view { rating = props.rating }
+                    , span [ Attr.class "textshadow" ] [ text (String.fromInt props.year) ]
+                    , span [ Attr.class "textshadow" ] [ text props.duration ]
+                    ]
+                )
+        }
 
 
 viewMovie :
