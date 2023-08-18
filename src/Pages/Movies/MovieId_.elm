@@ -279,7 +279,7 @@ viewPhotosTabContent model =
 
 viewCast : Model -> Html Msg
 viewCast model =
-    Components.Carousel.viewPerson
+    Components.Carousel.viewCastMember
         { title = "Cast"
         , id = "cast"
         , exploreMore = Nothing

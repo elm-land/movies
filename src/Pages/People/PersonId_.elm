@@ -5,6 +5,7 @@ import Api.Id
 import Api.Person.Details
 import Api.Person.Images
 import Api.Response exposing (Response)
+import Components.Carousel
 import Effect exposing (Effect)
 import Html exposing (..)
 import Html.Attributes as Attr
@@ -67,11 +68,19 @@ init params () =
 type Msg
     = ApiPersonResponded (Result Http.Error Api.Person.Details.Person)
     | ApiPersonImagesResponded (Result Http.Error (List Api.Person.Images.Image))
+    | CarouselSent Components.Carousel.Msg
 
 
 update : Msg -> Model -> ( Model, Effect Msg )
 update msg model =
     case msg of
+        CarouselSent innerMsg ->
+            Components.Carousel.update
+                { msg = innerMsg
+                , model = model
+                , toMsg = CarouselSent
+                }
+
         ApiPersonResponded (Ok person) ->
             ( { model | person = Api.Response.Success person }
             , Effect.none
@@ -132,12 +141,12 @@ view model =
     }
 
 
-viewLoading : Html msg
+viewLoading : Html Msg
 viewLoading =
     text "Loading..."
 
 
-viewError : Http.Error -> Html msg
+viewError : Http.Error -> Html Msg
 viewError httpError =
     text (Api.Error.toHelpfulMessage httpError)
 
@@ -146,7 +155,7 @@ viewPerson :
     { person : Api.Person.Details.Person
     , images : List Api.Person.Images.Image
     }
-    -> Html msg
+    -> Html Msg
 viewPerson { person, images } =
     let
         bioParagraphs : List (Html msg)
@@ -155,17 +164,40 @@ viewPerson { person, images } =
                 |> String.split "\n\n"
                 |> List.map (\line -> p [] [ text line ])
     in
-    div [ Attr.class "page--person-detail row responsive gap-px32 mobile-align-center" ]
-        [ div [ Attr.class "person__image" ]
-            [ case List.head images of
-                Nothing ->
-                    text ""
+    div [ Attr.class "" ]
+        [ div [ Attr.class "page--person-detail row responsive gap-px32 mobile-align-center" ]
+            [ div [ Attr.class "person__image" ]
+                [ case List.head images of
+                    Nothing ->
+                        text ""
 
-                Just image ->
-                    img [ Attr.src image.url, Attr.class "image" ] []
+                    Just image ->
+                        img [ Attr.src image.url, Attr.class "image" ] []
+                ]
+            , div [ Attr.class "col gap-px16" ]
+                [ h1 [ Attr.class "font-h1" ] [ text person.name ]
+                , div [ Attr.class "markdown" ] bioParagraphs
+                ]
             ]
-        , div [ Attr.class "col gap-px16" ]
-            [ h1 [ Attr.class "font-h1" ] [ text person.name ]
-            , div [ Attr.class "markdown" ] bioParagraphs
-            ]
+        , viewPhotos images
         ]
+
+
+viewPhotos : List Api.Person.Images.Image -> Html Msg
+viewPhotos images =
+    Components.Carousel.viewPersonPhotos
+        { title = "Photos"
+        , id = "photos"
+        , exploreMore = Nothing
+        , items =
+            images
+                |> List.map
+                    (\image ->
+                        { id = Api.Id.fromString image.url
+                        , imageUrl = image.url
+                        }
+                    )
+                |> Api.Response.Success
+        , noResultsMessage = "No photos found"
+        , onMsg = CarouselSent
+        }

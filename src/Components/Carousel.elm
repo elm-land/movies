@@ -1,7 +1,7 @@
 module Components.Carousel exposing
     ( Msg, update
     , viewMovie, viewTvShow
-    , viewPerson
+    , viewCastMember, viewPersonPhotos
     )
 
 {-|
@@ -9,7 +9,7 @@ module Components.Carousel exposing
 @docs Msg, update
 
 @docs viewMovie, viewTvShow
-@docs viewPerson
+@docs viewCastMember, viewPersonPhotos
 
 -}
 
@@ -125,10 +125,11 @@ viewMovie props =
             -> Item
         toCarouselItem movie =
             { route =
-                Route.Path.Movies_MovieId_
-                    { movieId = Api.Id.toString movie.id
-                    }
-            , title = movie.title
+                Just <|
+                    Route.Path.Movies_MovieId_
+                        { movieId = Api.Id.toString movie.id
+                        }
+            , title = Just movie.title
             , image = movie.imageUrl
             , details = Rating (movie.vote_average * 10)
             }
@@ -173,10 +174,11 @@ viewTvShow props =
             -> Item
         toCarouselItem tvShow =
             { route =
-                Route.Path.Tv_ShowId_
-                    { showId = Api.Id.toString tvShow.id
-                    }
-            , title = tvShow.title
+                Just <|
+                    Route.Path.Tv_ShowId_
+                        { showId = Api.Id.toString tvShow.id
+                        }
+            , title = Just tvShow.title
             , image = tvShow.imageUrl
             , details = Rating (tvShow.vote_average * 10)
             }
@@ -191,7 +193,43 @@ viewTvShow props =
         }
 
 
-viewPerson :
+viewPersonPhotos :
+    { title : String
+    , id : String
+    , exploreMore : Maybe Route.Path.Path
+    , items :
+        Api.Response.Response
+            (List
+                { person
+                    | imageUrl : String
+                    , id : Api.Id.Id
+                }
+            )
+    , noResultsMessage : String
+    , onMsg : Msg -> msg
+    }
+    -> Html msg
+viewPersonPhotos props =
+    let
+        toCarouselItem : { person | imageUrl : String, id : Api.Id.Id } -> Item
+        toCarouselItem person =
+            { title = Nothing
+            , image = person.imageUrl
+            , route = Nothing
+            , details = None
+            }
+    in
+    view
+        { title = props.title
+        , id = props.id
+        , exploreMore = props.exploreMore
+        , items = props.items |> Api.Response.map (List.map toCarouselItem)
+        , noResultsMessage = props.noResultsMessage
+        , onMsg = props.onMsg
+        }
+
+
+viewCastMember :
     { title : String
     , id : String
     , exploreMore : Maybe Route.Path.Path
@@ -215,16 +253,17 @@ viewPerson :
     , onMsg : Msg -> msg
     }
     -> Html msg
-viewPerson props =
+viewCastMember props =
     let
         toCarouselItem : { person | name : String, imageUrl : String, id : Api.Id.Id } -> Item
         toCarouselItem person =
-            { title = person.name
+            { title = Just person.name
             , image = person.imageUrl
             , route =
-                Route.Path.People_PersonId_
-                    { personId = Api.Id.toString person.id
-                    }
+                Just <|
+                    Route.Path.People_PersonId_
+                        { personId = Api.Id.toString person.id
+                        }
             , details = Caption (props.toSubheader person)
             }
     in
@@ -243,15 +282,16 @@ viewPerson props =
 
 
 type alias Item =
-    { title : String
+    { title : Maybe String
     , image : String
-    , route : Route.Path.Path
+    , route : Maybe Route.Path.Path
     , details : ItemDetails
     }
 
 
 type ItemDetails
-    = Rating Float
+    = None
+    | Rating Float
     | Caption String
 
 
@@ -345,30 +385,52 @@ viewCarouselItem item =
         imageUrl =
             "url('${url}')"
                 |> String.replace "${url}" item.image
-    in
-    a
-        [ Attr.class "carousel__item"
-        , Attr.attribute "aria-label" item.title
-        , Route.Path.href item.route
-        ]
-        [ div [ Attr.class "carousel__image", Attr.style "background-image" imageUrl ] []
-        , div [ Attr.class "carousel__content" ]
-            [ h4 [ Attr.title item.title, Attr.class "font-h4 max-lines-2" ] [ text item.title ]
-            , case item.details of
-                Rating rating ->
-                    let
-                        ratingDecimal : String
-                        ratingDecimal =
-                            (rating / 20)
-                                |> String.fromFloat
-                                |> String.left 3
-                    in
-                    div [ Attr.class "row gap-px8" ]
-                        [ Components.Stars.view { rating = rating }
-                        , span [ Attr.class "font-body" ] [ text ratingDecimal ]
-                        ]
 
-                Caption caption ->
-                    p [ Attr.class "carousel__caption" ] [ text caption ]
-            ]
+        viewElement : List (Html Msg) -> Html Msg
+        viewElement children =
+            case item.route of
+                Nothing ->
+                    span [ Attr.class "carousel__item" ] children
+
+                Just route ->
+                    a
+                        [ Attr.class "carousel__item"
+                        , Attr.attribute "aria-label" (item.title |> Maybe.withDefault "")
+                        , Route.Path.href route
+                        ]
+                        children
+
+        viewCarouselContent : String -> Html Msg
+        viewCarouselContent title =
+            div [ Attr.class "carousel__content" ]
+                [ h4 [ Attr.title title, Attr.class "font-h4 max-lines-2" ] [ text title ]
+                , case item.details of
+                    None ->
+                        text ""
+
+                    Rating rating ->
+                        let
+                            ratingDecimal : String
+                            ratingDecimal =
+                                (rating / 20)
+                                    |> String.fromFloat
+                                    |> String.left 3
+                        in
+                        div [ Attr.class "row gap-px8" ]
+                            [ Components.Stars.view { rating = rating }
+                            , span [ Attr.class "font-body" ] [ text ratingDecimal ]
+                            ]
+
+                    Caption caption ->
+                        p [ Attr.class "carousel__caption" ] [ text caption ]
+                ]
+    in
+    viewElement
+        [ div [ Attr.class "carousel__image", Attr.style "background-image" imageUrl ] []
+        , case item.title of
+            Just title ->
+                viewCarouselContent title
+
+            Nothing ->
+                text ""
         ]
