@@ -1,5 +1,6 @@
 module Api.Movie.Details exposing (Movie, fetch)
 
+import Api.CastMember exposing (CastMember)
 import Api.Duration
 import Api.Id
 import Api.ImageUrl
@@ -27,6 +28,24 @@ type alias Movie =
     }
 
 
+movieDecoder : Json.Decode.Decoder Movie
+movieDecoder =
+    Extra.Json.new Movie
+        |> Extra.Json.withField "id" Api.Id.decoder
+        |> Extra.Json.withField "title" Json.Decode.string
+        |> Extra.Json.withField "vote_average" Json.Decode.float
+        |> Extra.Json.withField "poster_path" Api.ImageUrl.movie
+        |> Extra.Json.withField "release_date" Json.Decode.string
+        |> Extra.Json.withField "overview" Json.Decode.string
+        |> Extra.Json.withField "runtime" Api.Duration.decoder
+        |> Extra.Json.with directorDecoder
+        |> Extra.Json.withField "budget" Json.Decode.float
+        |> Extra.Json.withField "revenue" Json.Decode.float
+        |> Extra.Json.withField "genres" (Json.Decode.list genreDecoder)
+        |> Extra.Json.with castMembersDecoder
+        |> Extra.Json.with similarMoviesDecoder
+
+
 type alias Genre =
     { id : Api.Id.Id
     , name : String
@@ -38,23 +57,6 @@ genreDecoder =
     Json.Decode.map2 Genre
         (Json.Decode.field "id" Api.Id.decoder)
         (Json.Decode.field "name" Json.Decode.string)
-
-
-type alias CastMember =
-    { id : Api.Id.Id
-    , name : String
-    , character : String
-    , imageUrl : Api.ImageUrl.ImageUrl
-    }
-
-
-castMemberDecoder : Json.Decode.Decoder CastMember
-castMemberDecoder =
-    Json.Decode.map4 CastMember
-        (Json.Decode.field "id" Api.Id.decoder)
-        (Json.Decode.field "name" Json.Decode.string)
-        (Json.Decode.field "character" Json.Decode.string)
-        (Json.Decode.field "profile_path" Api.ImageUrl.person)
 
 
 type alias CrewMember =
@@ -98,31 +100,13 @@ castMembersDecoder : Json.Decode.Decoder (List CastMember)
 castMembersDecoder =
     Json.Decode.at
         [ "credits", "cast" ]
-        (Json.Decode.list castMemberDecoder)
+        (Json.Decode.list Api.CastMember.decoder)
 
 
 similarMoviesDecoder : Json.Decode.Decoder (List Api.Movie.Movie)
 similarMoviesDecoder =
     Json.Decode.at [ "similar", "results" ]
         (Json.Decode.list Api.Movie.decoder)
-
-
-movieDecoder : Json.Decode.Decoder Movie
-movieDecoder =
-    Extra.Json.new Movie
-        |> Extra.Json.withField "id" Api.Id.decoder
-        |> Extra.Json.withField "title" Json.Decode.string
-        |> Extra.Json.withField "vote_average" Json.Decode.float
-        |> Extra.Json.withField "poster_path" Api.ImageUrl.movie
-        |> Extra.Json.withField "release_date" Json.Decode.string
-        |> Extra.Json.withField "overview" Json.Decode.string
-        |> Extra.Json.withField "runtime" Api.Duration.decoder
-        |> Extra.Json.with directorDecoder
-        |> Extra.Json.withField "budget" Json.Decode.float
-        |> Extra.Json.withField "revenue" Json.Decode.float
-        |> Extra.Json.withField "genres" (Json.Decode.list genreDecoder)
-        |> Extra.Json.with castMembersDecoder
-        |> Extra.Json.with similarMoviesDecoder
 
 
 fetch :

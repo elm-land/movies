@@ -3,6 +3,7 @@ module Pages.Tv exposing (Model, Msg, page)
 import Api.Duration
 import Api.Id
 import Api.Response
+import Api.Season
 import Api.TvShow
 import Api.TvShow.AiringToday
 import Api.TvShow.Details
@@ -158,11 +159,6 @@ viewFeaturedTvShow : Model -> Html Msg
 viewFeaturedTvShow model =
     case Api.Response.toMaybe model.featuredTvShow of
         Just featuredTvShow ->
-            let
-                numberOfSeasons : Int
-                numberOfSeasons =
-                    List.length featuredTvShow.seasons
-            in
             Components.Hero.viewTvShow
                 { title = featuredTvShow.name
                 , showIdLink = Just featuredTvShow.id
@@ -173,12 +169,7 @@ viewFeaturedTvShow model =
                         |> String.left 4
                         |> String.toInt
                         |> Maybe.withDefault 2020
-                , duration =
-                    if numberOfSeasons == 1 then
-                        "1 season"
-
-                    else
-                        String.fromInt numberOfSeasons ++ " seasons"
+                , duration = Api.Season.toSeasonCountLabel featuredTvShow.seasons
                 , backgroundImageUrl = featuredTvShow.imageUrl
                 }
 
@@ -190,10 +181,10 @@ viewPopularTvShows : Model -> Html Msg
 viewPopularTvShows model =
     Components.Carousel.viewTvShow
         { title = "Popular"
-        , id = "popular-movies"
+        , id = "popular-shows"
         , exploreMore = Nothing
         , items = model.popularTvShows
-        , noResultsMessage = "No movies found"
+        , noResultsMessage = "No shows found"
         , onMsg = CarouselSent
         }
 
@@ -202,10 +193,10 @@ viewTopRatedTvShows : Model -> Html Msg
 viewTopRatedTvShows model =
     Components.Carousel.viewTvShow
         { title = "Top Rated"
-        , id = "top-rated-movies"
+        , id = "top-rated-shows"
         , exploreMore = Nothing
         , items = model.topRatedTvShows
-        , noResultsMessage = "No movies found"
+        , noResultsMessage = "No shows found"
         , onMsg = CarouselSent
         }
 
@@ -214,9 +205,9 @@ viewAiringTodayTvShows : Model -> Html Msg
 viewAiringTodayTvShows model =
     Components.Carousel.viewTvShow
         { title = "Airing Today"
-        , id = "upcoming-movies"
+        , id = "airing-today--shows"
         , exploreMore = Nothing
         , items = model.airingTodayTvShows
-        , noResultsMessage = "No movies found"
+        , noResultsMessage = "No shows found"
         , onMsg = CarouselSent
         }

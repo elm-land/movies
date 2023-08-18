@@ -1,8 +1,10 @@
 module Api.TvShow.Details exposing (TvShow, fetch)
 
+import Api.CastMember exposing (CastMember)
 import Api.Duration
 import Api.Id
 import Api.ImageUrl
+import Api.Season exposing (Season)
 import Api.TvShow
 import Effect exposing (Effect)
 import Extra.Json
@@ -18,14 +20,8 @@ type alias TvShow =
     , first_air_date : String
     , overview : String
     , seasons : List Season
-
-    -- , duration : Api.Duration.Duration
-    -- , director : Maybe CrewMember
-    -- , budget : Float
-    -- , revenue : Float
-    -- , genre : List Genre
-    -- , cast : List CastMember
-    -- , similarMovies : List Api.TvShow.TvShow
+    , cast : List CastMember
+    , similarTvShows : List Api.TvShow.TvShow
     }
 
 
@@ -38,24 +34,22 @@ tvShowDecoder =
         |> Extra.Json.withField "poster_path" Api.ImageUrl.movie
         |> Extra.Json.withField "first_air_date" Json.Decode.string
         |> Extra.Json.withField "overview" Json.Decode.string
-        |> Extra.Json.withField "seasons" (Json.Decode.list seasonDecoder)
+        |> Extra.Json.withField "seasons" (Json.Decode.list Api.Season.decoder)
+        |> Extra.Json.with castMembersDecoder
+        |> Extra.Json.with similarTvShowsDecoder
 
 
-type alias Season =
-    { id : Api.Id.Id
-
-    -- , number : Int
-    }
-
-
-seasonDecoder : Json.Decode.Decoder Season
-seasonDecoder =
-    Extra.Json.new Season
-        |> Extra.Json.withField "id" Api.Id.decoder
+castMembersDecoder : Json.Decode.Decoder (List CastMember)
+castMembersDecoder =
+    Json.Decode.at
+        [ "credits", "cast" ]
+        (Json.Decode.list Api.CastMember.decoder)
 
 
-
--- |> Extra.Json.withField "season_number" Json.Decode.int
+similarTvShowsDecoder : Json.Decode.Decoder (List Api.TvShow.TvShow)
+similarTvShowsDecoder =
+    Json.Decode.at [ "similar", "results" ]
+        (Json.Decode.list Api.TvShow.decoder)
 
 
 fetch :
