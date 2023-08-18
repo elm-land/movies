@@ -213,7 +213,7 @@ viewTopRatedTvShows model =
 viewAiringTodayTvShows : Model -> Html Msg
 viewAiringTodayTvShows model =
     Components.Carousel.viewTvShow
-        { title = "Airing today"
+        { title = "Airing Today"
         , id = "upcoming-movies"
         , exploreMore = Nothing
         , items = model.airingTodayTvShows
