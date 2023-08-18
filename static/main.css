@@ -117,6 +117,10 @@ html {
   height: 100%;
 }
 
+img {
+  max-width: 100%;
+}
+
 body {
   height: 100%;
 
@@ -129,6 +133,13 @@ body {
 .row {
   display: flex;
 }
+.row.responsive {
+  flex-direction: column;
+}
+.col {
+  display: flex;
+  flex-direction: column;
+}
 
 .gap-px8 {
   gap: var(--space-px8);
@@ -136,6 +147,10 @@ body {
 
 .gap-px16 {
   gap: var(--space-px16);
+}
+
+.gap-px32 {
+  gap: var(--space-px32);
 }
 
 /* DEFAULT LAYOUT */
@@ -641,10 +656,34 @@ body {
   font-size: 14px;
 }
 
+/* PERSON DETAIL PAGE */
+.page--person-detail {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+.person__image {
+  flex-shrink: 0;
+  width: 280px; 
+}
+
+.mobile-align-center {
+  align-items: center;
+}
+
 /* RESPONSIVE */
 @media only screen and (min-width: 640px) {
   .layout {
     flex-direction: row;
+  }
+
+  .row.responsive {
+    flex-direction: row;
+  }
+  .mobile-align-center {
+    align-items: unset;
   }
 
   .navbar {
