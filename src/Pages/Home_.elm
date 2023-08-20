@@ -16,6 +16,7 @@ import Html.Attributes as Attr
 import Http
 import Layouts
 import Page exposing (Page)
+import Random
 import Route exposing (Route)
 import Route.Path
 import Shared
@@ -75,6 +76,7 @@ type Msg
     | PopularTvShowsCarouselSent Components.Carousel.Msg
     | ApiPopularMoviesResponded (Result Http.Error (List Api.Movie.Popular.Movie))
     | ApiPopularTvShowsResponded (Result Http.Error (List Api.TvShow.Popular.TvShow))
+    | RandomlySelectedFeaturedMovie Api.Movie.Popular.Movie
     | ApiFeaturedMovieResponded (Result Http.Error Api.Movie.Details.Movie)
 
 
@@ -102,12 +104,13 @@ update msg model =
                     Api.Response.fromResult result
             in
             case result of
-                Ok (firstPopularMovie :: _) ->
+                Ok (firstPopularMovie :: otherPopularMovies) ->
                     ( { model | popularMovies = popularMovies }
-                    , Api.Movie.Details.fetch
-                        { id = firstPopularMovie.id
-                        , onResponse = ApiFeaturedMovieResponded
-                        }
+                    , Random.uniform
+                        firstPopularMovie
+                        (List.take 4 otherPopularMovies)
+                        |> Random.generate RandomlySelectedFeaturedMovie
+                        |> Effect.sendCmd
                     )
 
                 _ ->
@@ -118,6 +121,14 @@ update msg model =
         ApiPopularTvShowsResponded result ->
             ( { model | popularTvShows = Api.Response.fromResult result }
             , Effect.none
+            )
+
+        RandomlySelectedFeaturedMovie movie ->
+            ( model
+            , Api.Movie.Details.fetch
+                { id = movie.id
+                , onResponse = ApiFeaturedMovieResponded
+                }
             )
 
         ApiFeaturedMovieResponded result ->
@@ -143,39 +154,54 @@ view : Model -> View Msg
 view model =
     { title = ""
     , body =
-        [ case Api.Response.toMaybe model.featuredMovie of
-            Just featuredMovie ->
-                Components.Hero.viewMovie
-                    { title = featuredMovie.title
-                    , movieIdLink = Just featuredMovie.id
-                    , description = featuredMovie.overview
-                    , rating = featuredMovie.vote_average * 10
-                    , year =
-                        featuredMovie.release_date
-                            |> String.left 4
-                            |> String.toInt
-                            |> Maybe.withDefault 2020
-                    , duration = Api.Duration.toString featuredMovie.duration
-                    , backgroundImageUrl = featuredMovie.imageUrl
-                    }
-
-            _ ->
-                div [ Attr.class "hero hero--invisible" ] []
-        , Components.Carousel.viewMovie
-            { title = "Popular Movies"
-            , id = "popular-movies"
-            , exploreMore = Just Route.Path.Movies
-            , items = model.popularMovies
-            , noResultsMessage = "No popular movies found"
-            , onMsg = PopularMoviesCarouselSent
-            }
-        , Components.Carousel.viewTvShow
-            { title = "Popular TV"
-            , id = "popular-tv-shows"
-            , exploreMore = Just Route.Path.Tv
-            , items = model.popularTvShows
-            , noResultsMessage = "No popular TV shows found"
-            , onMsg = PopularTvShowsCarouselSent
-            }
+        [ viewFeaturedMovie model
+        , viewPopularMovies model
+        , viewPopularTvShows model
         ]
     }
+
+
+viewFeaturedMovie : Model -> Html Msg
+viewFeaturedMovie model =
+    case Api.Response.toMaybe model.featuredMovie of
+        Just featuredMovie ->
+            Components.Hero.viewMovie
+                { title = featuredMovie.title
+                , movieIdLink = Just featuredMovie.id
+                , description = featuredMovie.overview
+                , rating = featuredMovie.vote_average * 10
+                , year =
+                    featuredMovie.release_date
+                        |> String.left 4
+                        |> String.toInt
+                        |> Maybe.withDefault 2020
+                , duration = Api.Duration.toString featuredMovie.duration
+                , backgroundImageUrl = featuredMovie.imageUrl
+                }
+
+        _ ->
+            div [ Attr.class "hero hero--invisible" ] []
+
+
+viewPopularMovies : Model -> Html Msg
+viewPopularMovies model =
+    Components.Carousel.viewMovie
+        { title = "Popular Movies"
+        , id = "popular-movies"
+        , exploreMore = Just Route.Path.Movies
+        , items = model.popularMovies
+        , noResultsMessage = "No popular movies found"
+        , onMsg = PopularMoviesCarouselSent
+        }
+
+
+viewPopularTvShows : Model -> Html Msg
+viewPopularTvShows model =
+    Components.Carousel.viewTvShow
+        { title = "Popular TV"
+        , id = "popular-tv-shows"
+        , exploreMore = Just Route.Path.Tv
+        , items = model.popularTvShows
+        , noResultsMessage = "No popular TV shows found"
+        , onMsg = PopularTvShowsCarouselSent
+        }
