@@ -13,6 +13,7 @@ type alias Credit =
     , title : String
     , character : String
     , imageUrl : Api.ImageUrl.ImageUrl
+    , popularity : Float
     }
 
 
@@ -28,20 +29,22 @@ creditDecoder =
         toCreditDecoder mediaType =
             case mediaType of
                 "movie" ->
-                    Json.Decode.map5 Credit
+                    Json.Decode.map6 Credit
                         (Json.Decode.succeed Movie)
                         (Json.Decode.field "id" Api.Id.decoder)
                         (Json.Decode.field "title" Json.Decode.string)
                         (Json.Decode.field "character" Json.Decode.string)
                         (Json.Decode.field "poster_path" Api.ImageUrl.movie)
+                        (Json.Decode.field "popularity" Json.Decode.float)
 
                 "tv" ->
-                    Json.Decode.map5 Credit
+                    Json.Decode.map6 Credit
                         (Json.Decode.succeed TvShow)
                         (Json.Decode.field "id" Api.Id.decoder)
                         (Json.Decode.field "name" Json.Decode.string)
                         (Json.Decode.field "character" Json.Decode.string)
                         (Json.Decode.field "poster_path" Api.ImageUrl.tvShow)
+                        (Json.Decode.field "popularity" Json.Decode.float)
 
                 _ ->
                     Json.Decode.fail "Unrecognized media type"
@@ -61,6 +64,7 @@ fetch options =
         decoder =
             Json.Decode.field "cast"
                 (Json.Decode.list creditDecoder)
+                |> Json.Decode.map (List.sortBy (.popularity >> negate))
     in
     Effect.sendApiRequest
         { endpoint = "/person/" ++ Api.Id.toString options.id ++ "/combined_credits"
