@@ -14,6 +14,7 @@ type alias Credit =
     , character : String
     , imageUrl : Api.ImageUrl.ImageUrl
     , popularity : Float
+    , genreIds : List Int
     }
 
 
@@ -29,22 +30,24 @@ creditDecoder =
         toCreditDecoder mediaType =
             case mediaType of
                 "movie" ->
-                    Json.Decode.map6 Credit
+                    Json.Decode.map7 Credit
                         (Json.Decode.succeed Movie)
                         (Json.Decode.field "id" Api.Id.decoder)
                         (Json.Decode.field "title" Json.Decode.string)
                         (Json.Decode.field "character" Json.Decode.string)
                         (Json.Decode.field "poster_path" Api.ImageUrl.movie)
                         (Json.Decode.field "popularity" Json.Decode.float)
+                        (Json.Decode.field "genre_ids" (Json.Decode.list Json.Decode.int))
 
                 "tv" ->
-                    Json.Decode.map6 Credit
+                    Json.Decode.map7 Credit
                         (Json.Decode.succeed TvShow)
                         (Json.Decode.field "id" Api.Id.decoder)
                         (Json.Decode.field "name" Json.Decode.string)
                         (Json.Decode.field "character" Json.Decode.string)
                         (Json.Decode.field "poster_path" Api.ImageUrl.tvShow)
                         (Json.Decode.field "popularity" Json.Decode.float)
+                        (Json.Decode.field "genre_ids" (Json.Decode.list Json.Decode.int))
 
                 _ ->
                     Json.Decode.fail "Unrecognized media type"
@@ -64,7 +67,28 @@ fetch options =
         decoder =
             Json.Decode.field "cast"
                 (Json.Decode.list creditDecoder)
-                |> Json.Decode.map (List.sortBy (.popularity >> negate))
+                |> Json.Decode.map sortByPopularityButNotTalkShows
+
+        sortByPopularityButNotTalkShows : List Credit -> List Credit
+        sortByPopularityButNotTalkShows credits =
+            let
+                talkShowId : Int
+                talkShowId =
+                    10767
+
+                isTalkShow : Credit -> Bool
+                isTalkShow credit =
+                    List.member talkShowId credit.genreIds
+            in
+            credits
+                |> List.sortBy
+                    (\credit ->
+                        if isTalkShow credit then
+                            -(credit.popularity / 1000)
+
+                        else
+                            -credit.popularity
+                    )
     in
     Effect.sendApiRequest
         { endpoint = "/person/" ++ Api.Id.toString options.id ++ "/combined_credits"
