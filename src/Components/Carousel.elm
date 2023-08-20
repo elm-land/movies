@@ -1,7 +1,8 @@
 module Components.Carousel exposing
     ( Msg, update
     , viewMovie, viewTvShow
-    , viewCastMember, viewPersonPhotos
+    , viewCastMember
+    , viewPersonPhotos, viewPersonCredits
     , Item, ItemDetails(..)
     , viewCarouselItem
     )
@@ -11,7 +12,8 @@ module Components.Carousel exposing
 @docs Msg, update
 
 @docs viewMovie, viewTvShow
-@docs viewCastMember, viewPersonPhotos
+@docs viewCastMember
+@docs viewPersonPhotos, viewPersonCredits
 
 @docs Item, ItemDetails
 @docs viewCarouselItem
@@ -21,6 +23,7 @@ module Components.Carousel exposing
 import Api.Error
 import Api.Id
 import Api.ImageUrl
+import Api.Person.Credits
 import Api.Response
 import Browser.Dom
 import Components.Icon
@@ -222,6 +225,61 @@ viewPersonPhotos props =
             , image = person.imageUrl
             , route = Nothing
             , details = None
+            }
+    in
+    view
+        { title = props.title
+        , id = props.id
+        , exploreMore = props.exploreMore
+        , items = props.items |> Api.Response.map (List.map toCarouselItem)
+        , noResultsMessage = props.noResultsMessage
+        , onMsg = props.onMsg
+        }
+
+
+viewPersonCredits :
+    { title : String
+    , id : String
+    , exploreMore : Maybe Route.Path.Path
+    , items :
+        Api.Response.Response
+            (List
+                { credit
+                    | id : Api.Id.Id
+                    , imageUrl : String
+                    , title : String
+                    , character : String
+                    , kind : Api.Person.Credits.Kind
+                }
+            )
+    , noResultsMessage : String
+    , onMsg : Msg -> msg
+    }
+    -> Html msg
+viewPersonCredits props =
+    let
+        toCarouselItem :
+            { credit
+                | id : Api.Id.Id
+                , imageUrl : String
+                , title : String
+                , character : String
+                , kind : Api.Person.Credits.Kind
+            }
+            -> Item
+        toCarouselItem credit =
+            { title = Just credit.title
+            , image = credit.imageUrl
+            , route =
+                case credit.kind of
+                    Api.Person.Credits.Movie ->
+                        Route.Path.Movies_MovieId_ { movieId = Api.Id.toString credit.id }
+                            |> Just
+
+                    Api.Person.Credits.TvShow ->
+                        Route.Path.Tv_ShowId_ { showId = Api.Id.toString credit.id }
+                            |> Just
+            , details = Caption credit.character
             }
     in
     view

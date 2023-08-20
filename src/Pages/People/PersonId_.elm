@@ -2,6 +2,7 @@ module Pages.People.PersonId_ exposing (Model, Msg, page)
 
 import Api.Error
 import Api.Id
+import Api.Person.Credits
 import Api.Person.Details
 import Api.Person.Images
 import Api.Response exposing (Response)
@@ -40,6 +41,7 @@ toLayout model =
 type alias Model =
     { person : Response Api.Person.Details.Person
     , images : Response (List Api.Person.Images.Image)
+    , credits : Response (List Api.Person.Credits.Credit)
     }
 
 
@@ -47,6 +49,7 @@ init : { personId : String } -> () -> ( Model, Effect Msg )
 init params () =
     ( { person = Api.Response.Loading
       , images = Api.Response.Loading
+      , credits = Api.Response.Loading
       }
     , Effect.batch
         [ Api.Person.Details.fetch
@@ -56,6 +59,10 @@ init params () =
         , Api.Person.Images.fetch
             { id = Api.Id.fromString params.personId
             , onResponse = ApiPersonImagesResponded
+            }
+        , Api.Person.Credits.fetch
+            { id = Api.Id.fromString params.personId
+            , onResponse = ApiPersonCreditsResponded
             }
         ]
     )
@@ -68,6 +75,7 @@ init params () =
 type Msg
     = ApiPersonResponded (Result Http.Error Api.Person.Details.Person)
     | ApiPersonImagesResponded (Result Http.Error (List Api.Person.Images.Image))
+    | ApiPersonCreditsResponded (Result Http.Error (List Api.Person.Credits.Credit))
     | CarouselSent Components.Carousel.Msg
 
 
@@ -98,6 +106,16 @@ update msg model =
 
         ApiPersonImagesResponded (Err httpError) ->
             ( { model | images = Api.Response.Failure httpError }
+            , Effect.none
+            )
+
+        ApiPersonCreditsResponded (Ok credits) ->
+            ( { model | credits = Api.Response.Success credits }
+            , Effect.none
+            )
+
+        ApiPersonCreditsResponded (Err httpError) ->
+            ( { model | credits = Api.Response.Failure httpError }
             , Effect.none
             )
 
@@ -136,6 +154,7 @@ view model =
                 viewPerson
                     { person = person
                     , images = images
+                    , model = model
                     }
         ]
     }
@@ -154,9 +173,10 @@ viewError httpError =
 viewPerson :
     { person : Api.Person.Details.Person
     , images : List Api.Person.Images.Image
+    , model : Model
     }
     -> Html Msg
-viewPerson { person, images } =
+viewPerson { person, images, model } =
     let
         bioParagraphs : List (Html msg)
         bioParagraphs =
@@ -179,8 +199,21 @@ viewPerson { person, images } =
                 , div [ Attr.class "markdown" ] bioParagraphs
                 ]
             ]
+        , viewKnownFor model.credits
         , viewPhotos images
         ]
+
+
+viewKnownFor : Response (List Api.Person.Credits.Credit) -> Html Msg
+viewKnownFor credits =
+    Components.Carousel.viewPersonCredits
+        { title = "Known for"
+        , id = "known-for"
+        , exploreMore = Nothing
+        , items = credits
+        , noResultsMessage = "No related movies or TV shows found"
+        , onMsg = CarouselSent
+        }
 
 
 viewPhotos : List Api.Person.Images.Image -> Html Msg
