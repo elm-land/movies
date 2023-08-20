@@ -79,11 +79,19 @@ fetch options =
                 isTalkShow : Credit -> Bool
                 isTalkShow credit =
                     List.member talkShowId credit.genreIds
+
+                newsShowId : Int
+                newsShowId =
+                    10763
+
+                isNewsShow : Credit -> Bool
+                isNewsShow credit =
+                    List.member newsShowId credit.genreIds
             in
             credits
                 |> List.sortBy
                     (\credit ->
-                        if isTalkShow credit then
+                        if isTalkShow credit || isNewsShow credit then
                             -(credit.popularity / 1000)
 
                         else
