@@ -6,7 +6,7 @@
 
 The goal of this repository is to show you how to use [Elm Land](https://elm.land) to build a real web application. 
 
-![Screenshot](./screenshot.png)
+![Screenshot](./static/screenshot.png)
 
 If you're new to Elm Land, or even frontend web development in general, come join the [Elm Land Discord](https://join.elm.land) and say hello! 🌈
 
